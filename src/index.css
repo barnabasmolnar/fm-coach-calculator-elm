@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.half-star::after {
+    @apply inset-0 absolute text-slate-200 -z-10;
+    content: "\f005";
+}
