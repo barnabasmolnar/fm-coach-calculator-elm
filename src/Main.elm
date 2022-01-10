@@ -1,97 +1,12 @@
 module Main exposing (..)
 
-import AllDict exposing (Dict, empty, get, insert)
+import AllDict exposing (empty, insert)
+import Attribute exposing (Attribute(..), Model, general, getAttrName, getAttrVal, gk, mental)
 import Browser
+import Formula exposing (..)
 import Html exposing (Html, div, fieldset, form, i, input, label, legend, span, text)
 import Html.Attributes exposing (class, for, id, type_, value)
 import Html.Events exposing (onInput)
-
-
-type Attribute
-    = Determination
-    | Discipline
-    | Motivating
-    | Fitness
-    | Attacking
-    | Defending
-    | Tactical
-    | Technical
-    | Mental
-    | Distribution
-    | Handling
-    | ShotStopping
-
-
-getAttrName : Attribute -> String
-getAttrName attr =
-    case attr of
-        Determination ->
-            "Determination"
-
-        Discipline ->
-            "Level of Discipline"
-
-        Motivating ->
-            "Motivating"
-
-        Fitness ->
-            "Fitness"
-
-        Attacking ->
-            "Attacking"
-
-        Defending ->
-            "Defending"
-
-        Tactical ->
-            "Tactical"
-
-        Technical ->
-            "Technical"
-
-        Mental ->
-            "Mental"
-
-        Distribution ->
-            "Distribution"
-
-        Handling ->
-            "Handling"
-
-        ShotStopping ->
-            "Shot Stopping"
-
-
-mental : List Attribute
-mental =
-    [ Determination
-    , Discipline
-    , Motivating
-    ]
-
-
-general : List Attribute
-general =
-    [ Fitness
-    , Attacking
-    , Defending
-    , Tactical
-    , Technical
-    , Mental
-    ]
-
-
-gk : List Attribute
-gk =
-    [ Distribution
-    , Handling
-    , ShotStopping
-    ]
-
-
-getAttrVal : Attribute -> Model -> Int
-getAttrVal attr model =
-    get attr model |> Maybe.withDefault 1
 
 
 
@@ -105,10 +20,6 @@ main =
 
 
 -- MODEL
-
-
-type alias Model =
-    Dict Attribute Int
 
 
 init : Model
@@ -197,71 +108,6 @@ viewAttrInputGroup groupLabel attrs model =
         ]
 
 
-viewDefendingTactical : Model -> Html msg
-viewDefendingTactical model =
-    div []
-        [ text <| String.fromInt <| defendingTacticalFormula model ]
-
-
-baseFormula : List ( Attribute, Int ) -> Model -> Int
-baseFormula attrs model =
-    let
-        ddm =
-            [ ( Determination, 2 ), ( Discipline, 2 ), ( Motivating, 2 ) ]
-
-        allAttrs =
-            attrs ++ ddm
-    in
-    List.foldl (\( attr, weight ) acc -> getAttrVal attr model * weight + acc)
-        0
-        allAttrs
-
-
-fitnessFormula : Model -> Int
-fitnessFormula =
-    baseFormula [ ( Fitness, 9 ) ]
-
-
-defendingTacticalFormula : Model -> Int
-defendingTacticalFormula =
-    baseFormula [ ( Defending, 6 ), ( Tactical, 3 ) ]
-
-
-defendingTechnicalFormula : Model -> Int
-defendingTechnicalFormula =
-    baseFormula [ ( Defending, 6 ), ( Technical, 3 ) ]
-
-
-attackingTacticalFormula : Model -> Int
-attackingTacticalFormula =
-    baseFormula [ ( Attacking, 6 ), ( Tactical, 3 ) ]
-
-
-attackingTechnicalFormula : Model -> Int
-attackingTechnicalFormula =
-    baseFormula [ ( Attacking, 6 ), ( Technical, 3 ) ]
-
-
-possessionTacticalFormula : Model -> Int
-possessionTacticalFormula =
-    baseFormula [ ( Tactical, 6 ), ( Mental, 3 ) ]
-
-
-possessionTechnicalFormula : Model -> Int
-possessionTechnicalFormula =
-    baseFormula [ ( Technical, 6 ), ( Mental, 3 ) ]
-
-
-gkShotStoppingFormula : Model -> Int
-gkShotStoppingFormula =
-    baseFormula [ ( ShotStopping, 9 ) ]
-
-
-gkHandlingFormula : Model -> Int
-gkHandlingFormula =
-    baseFormula [ ( Handling, 6 ), ( Distribution, 3 ) ]
-
-
 fasFullFilledStar : Html msg
 fasFullFilledStar =
     span [ class "text-lg text-yellow-500" ] [ i [ class "fas fa-star" ] [] ]
@@ -318,7 +164,7 @@ baseIcon fasClass =
     span [ class "mt-1.5 text-lg bg-orange-600 border-2 border-orange-300 shadow shadow-orange-400 text-slate-100 w-12 h-12 p-4 flex items-center justify-center rounded-md" ] [ i [ class <| "fas " ++ fasClass ] [] ]
 
 
-viewRatingGroup : String -> String -> List ( String, Model -> Int ) -> Model -> Html msg
+viewRatingGroup : String -> String -> List ( String, Formula ) -> Model -> Html msg
 viewRatingGroup fasId groupLabel formulas model =
     div [ class "py-10" ]
         [ div [ class "flex gap-x-4 w-full" ]
@@ -332,7 +178,7 @@ viewRatingGroup fasId groupLabel formulas model =
         ]
 
 
-viewRating : String -> (Model -> Int) -> Model -> Html msg
+viewRating : String -> Formula -> Model -> Html msg
 viewRating label formula model =
     div [ class "sm:grid grid-cols-2 max-w-full overflow-hidden" ]
         [ div [ class "my-auto" ]
