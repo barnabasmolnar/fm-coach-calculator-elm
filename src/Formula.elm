@@ -1,6 +1,8 @@
 module Formula exposing (..)
 
 import Attribute exposing (Attribute(..), Model, getAttrVal)
+import Html exposing (Html, i, span)
+import Html.Attributes exposing (class)
 
 
 type alias Formula =
@@ -64,3 +66,35 @@ gkShotStoppingFormula =
 gkHandlingFormula : Formula
 gkHandlingFormula =
     baseFormula [ ( Handling, 6 ), ( Distribution, 3 ) ]
+
+
+makeStars : Float -> List (Html msg)
+makeStars x =
+    let
+        full =
+            floor x
+
+        empty =
+            5 - round x
+
+        half =
+            5 - full - empty
+    in
+    List.repeat full fasFullFilledStar
+        ++ List.repeat half fasHalfStar
+        ++ List.repeat empty fasFullEmptyStar
+
+
+fasFullFilledStar : Html msg
+fasFullFilledStar =
+    span [ class "text-lg text-yellow-500" ] [ i [ class "fas fa-star" ] [] ]
+
+
+fasFullEmptyStar : Html msg
+fasFullEmptyStar =
+    span [ class "text-lg text-slate-200" ] [ i [ class "fas fa-star" ] [] ]
+
+
+fasHalfStar : Html msg
+fasHalfStar =
+    span [ class "text-lg text-yellow-500" ] [ i [ class "fas fa-star-half half-star relative z-0" ] [] ]

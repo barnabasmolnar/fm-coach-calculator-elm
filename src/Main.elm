@@ -68,12 +68,6 @@ view model =
         ]
 
 
-inputClasses : String
-inputClasses =
-    "block w-24 rounded-md border-gray-300 shadow-sm "
-        ++ "focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-
-
 viewAttrInput : Model -> Attribute -> Html Msg
 viewAttrInput model attr =
     let
@@ -86,7 +80,12 @@ viewAttrInput model attr =
     div [ class "flex gap-x-4" ]
         [ label [ class "my-auto w-2/3", for attrName ] [ text attrName ]
         , input
-            [ class inputClasses
+            [ class <|
+                String.join
+                    " "
+                    [ "block w-24 rounded-md border-gray-300 shadow-sm"
+                    , "focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    ]
             , id attrName
             , Html.Attributes.max "20"
             , Html.Attributes.min "1"
@@ -108,55 +107,9 @@ viewAttrInputGroup groupLabel attrs model =
         ]
 
 
-fasFullFilledStar : Html msg
-fasFullFilledStar =
-    span [ class "text-lg text-yellow-500" ] [ i [ class "fas fa-star" ] [] ]
-
-
-fasFullEmptyStar : Html msg
-fasFullEmptyStar =
-    span [ class "text-lg text-slate-200" ] [ i [ class "fas fa-star" ] [] ]
-
-
-fasHalfStar : Html msg
-fasHalfStar =
-    span [ class "text-lg text-yellow-500" ] [ i [ class "fas fa-star-half half-star relative z-0" ] [] ]
-
-
-viewStarRating : number -> List (Html msg)
+viewStarRating : Int -> List (Html msg)
 viewStarRating x =
-    if x >= 270 then
-        List.repeat 5 fasFullFilledStar
-
-    else if x >= 240 then
-        List.repeat 4 fasFullFilledStar ++ [ fasHalfStar ]
-
-    else if x >= 210 then
-        List.repeat 4 fasFullFilledStar ++ [ fasFullEmptyStar ]
-
-    else if x >= 180 then
-        List.repeat 3 fasFullFilledStar ++ [ fasHalfStar, fasFullEmptyStar ]
-
-    else if x >= 150 then
-        List.repeat 3 fasFullFilledStar ++ List.repeat 2 fasFullEmptyStar
-
-    else if x >= 120 then
-        List.repeat 2 fasFullFilledStar ++ fasHalfStar :: List.repeat 2 fasFullEmptyStar
-
-    else if x >= 90 then
-        List.repeat 2 fasFullFilledStar ++ List.repeat 3 fasFullEmptyStar
-
-    else if x >= 60 then
-        [ fasFullFilledStar, fasHalfStar ] ++ List.repeat 3 fasFullEmptyStar
-
-    else if x >= 30 then
-        fasFullFilledStar :: List.repeat 4 fasFullEmptyStar
-
-    else if x >= 0 then
-        fasHalfStar :: List.repeat 4 fasFullEmptyStar
-
-    else
-        []
+    toFloat (x // 30 + 1) / 2 |> clamp 0.5 5.0 |> makeStars
 
 
 baseIcon : String -> Html msg
@@ -165,21 +118,21 @@ baseIcon fasClass =
 
 
 viewRatingGroup : String -> String -> List ( String, Formula ) -> Model -> Html msg
-viewRatingGroup fasId groupLabel formulas model =
+viewRatingGroup fasId groupLabel labelFormulaPairs model =
     div [ class "py-10" ]
         [ div [ class "flex gap-x-4 w-full" ]
             [ div [] [ baseIcon fasId ]
             , div [ class "space-y-1 w-full" ]
                 [ div [ class "font-bold text-lg text-slate-100" ] [ text groupLabel ]
                 , div [ class "space-y-4 sm:space-y-0" ] <|
-                    List.map (\( label, formula ) -> viewRating label formula model) formulas
+                    List.map (viewRating model) labelFormulaPairs
                 ]
             ]
         ]
 
 
-viewRating : String -> Formula -> Model -> Html msg
-viewRating label formula model =
+viewRating : Model -> ( String, Formula ) -> Html msg
+viewRating model ( label, formula ) =
     div [ class "sm:grid grid-cols-2 max-w-full overflow-hidden" ]
         [ div [ class "my-auto" ]
             [ text (label ++ " (" ++ String.fromInt (formula model) ++ ")") ]
