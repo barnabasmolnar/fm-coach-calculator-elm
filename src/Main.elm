@@ -1,12 +1,12 @@
 module Main exposing (..)
 
-import AllDict exposing (empty, insert)
+import AllDict exposing (empty, insert, withPredicate)
 import Attribute exposing (Attribute(..), Model, general, getAttrName, getAttrVal, gk, mental)
 import Browser
 import Formula exposing (..)
-import Html exposing (Html, div, fieldset, form, i, input, label, legend, span, text)
+import Html exposing (Html, button, div, fieldset, form, i, input, label, legend, span, text)
 import Html.Attributes exposing (class, for, id, type_, value)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onClick, onInput)
 
 
 
@@ -33,6 +33,8 @@ init =
 
 type Msg
     = Update Attribute Int
+    | Reset
+    | ResetGroup (List Attribute)
 
 
 update : Msg -> Model -> Model
@@ -40,6 +42,12 @@ update msg model =
     case msg of
         Update attr val ->
             insert attr (clamp 1 20 val) model
+
+        Reset ->
+            empty
+
+        ResetGroup group ->
+            withPredicate (\x -> List.member x group) 1 model
 
 
 
@@ -50,10 +58,18 @@ view : Model -> Html Msg
 view model =
     div [ class "md:grid grid-cols-2 gap-x-4 space-y-16 md:space-y-0 h-full" ]
         [ div []
-            [ form [ class "space-y-12 p-6 max-w-md mx-auto md:ml-auto md:mr-0" ]
-                [ viewAttrInputGroup "Mental" mental model
-                , viewAttrInputGroup "Coaching" general model
-                , viewAttrInputGroup "Goalkeeping" gk model
+            [ form [ class "p-6 max-w-md mx-auto md:ml-auto md:mr-0" ]
+                [ button
+                    [ class "block ml-auto p-2 text-sm"
+                    , onClick Reset
+                    , type_ "button"
+                    ]
+                    [ text "Reset all attributes" ]
+                , div [ class "space-y-12" ]
+                    [ viewAttrInputGroup "Mental" mental model
+                    , viewAttrInputGroup "Coaching" general model
+                    , viewAttrInputGroup "Goalkeeping" gk model
+                    ]
                 ]
             ]
         , div [ class "md:!-mt-8 md:min-w-[320px] bg-sky-900 text-slate-200 p-6 lg:px-12" ]
@@ -102,6 +118,12 @@ viewAttrInputGroup groupLabel attrs model =
     fieldset [ class "border rounded-md" ]
         [ legend [ class "font-bold text-sm uppercase m-4 px-2 tracking-wider" ]
             [ text groupLabel ]
+        , button
+            [ class "flex items-center justify-center w-6 h-6 p-4 ml-auto -mt-6 mb-2"
+            , onClick (ResetGroup attrs)
+            , type_ "button"
+            ]
+            [ span [ class "text-sm text-sky-800 block" ] [ i [ class "fas fa-sync-alt" ] [] ] ]
         , div [ class "space-y-4 px-6 pb-4" ] <|
             List.map (viewAttrInput model) attrs
         ]
